@@ -4,7 +4,7 @@ def iniciarbanco():
     conexao = sqlite3.connect('biblioteca.db')
 
     cursor = conexao.cursor()
-    return cursor , conexao
+    return cursor, conexao
 
 def criar_tabela_livro(cursor):
     cursor.execute(
@@ -54,25 +54,24 @@ def criar_tabela_Endereco(cursor):
         """
     )
 def fechar_conexao(conexao):
-    conexao.close
-    print("A tabela foi criada")
+    conexao.close()
 
 
-def inserir_livro(cursor,conexao,titulo,editora,qnt_estoque):
+def inserir_livro(cursor,conexao, titulo, editora, autor, qnt_estoque):
     cursor.execute(
         """
-            INSERT INTO  livros(titulo, editora, qnt_estoque)
-            VALUES (?, ?, ?)
+            INSERT INTO  livros(titulo, editora, autor, qnt_estoque)
+            VALUES (?, ?, ?, ?)
         
         """,
-        (titulo, editora, qnt_estoque)
+        (titulo, editora, autor, qnt_estoque)
 
     )
     conexao.commit()
 def inserir_cliente(cursor,conexao,CPF,nome,list_livros_comprados,telefone):
     cursor.execute(
         """
-            INSERT INTO  clientes(CPF, nome, list_livros_comprados, telefone)
+            INSERT INTO clientes(CPF, nome, list_livros_comprados, telefone)
             VALUES (?, ?, ?, ?)
         
         """,
@@ -80,10 +79,10 @@ def inserir_cliente(cursor,conexao,CPF,nome,list_livros_comprados,telefone):
 
     )
     conexao.commit()
-def inserir_editora(cursor,conexao,gerente,contato,telefone):
+def inserir_editora(cursor, conexao, gerente, contato, telefone):
     cursor.execute(
         """
-            INSERT INTO  clientes(gerente, contato, telefone)
+            INSERT INTO editora(gerente, contato, telefone)
             VALUES (?, ?, ?)
         
         """,

@@ -1,9 +1,11 @@
 import banco_dados.b_d as db
-import sqlite3
 import streamlit as st
 import pandas as pd
 
 cursor, conexao = db.iniciarbanco()
+db.criar_tabela_cliente(cursor)
+db.criar_tabela_livro(cursor)
+db.criar_tabela_editora(cursor)
 
 #transformar tabelas em lista de dicionarios
 def listar_dados(cursor, tabela):
@@ -19,118 +21,154 @@ def listar_dados(cursor, tabela):
 
     return lista_dados
 
-print(listar_dados(cursor, "livros"))
-
-def carregar_dados(tabela):
+def carregar_tabela_para_dataframe(cursor, tabela):
     try:
-        data = db.listar_dados(cursor, tabela)
-        if not data:
-            st.info(f"Nenhum dado encontrado na tabela {tabela}.", icon="ℹ️")
-            return []
+        dados = listar_dados(cursor, tabela)
+        if not dados:
+            st.info("Nenhum dado encontrado no banco de dados.", icon="ℹ️")
+            return pd.DataFrame()  # Retorna um DataFrame vazio
 
-        return data
+        df = pd.DataFrame(dados)
+        return df
     except Exception as e:
-        st.error(f"Erro ao carregar {tabela}: {e}")
-        return []
+        st.error(f"Erro ao carregar dados da tabela {tabela}: {e}")
+        return pd.DataFrame()
+
+def tabela_dados(tabela):
+    st.subheader(f"📖 Lista de {tabela}")
+    if st.button(f"🔄 Recarregar {tabela}"):
+        data = listar_dados(cursor, tabela)
+        if data:
+            st.table(data)
+        else:
+            st.info(f"Nenhum dado encontrado na tabela {tabela}.", icon="ℹ️")
+    else:
+        data = listar_dados(cursor, tabela)
+        if data:
+            st.table(data)
+        else:
+            st.info(f"Nenhum dado encontrado na tabela {tabela}.", icon="ℹ️")
+
+st.title("Sistema de Gerenciamento de Biblioteca")
+st.write("Bem-vindo ao sistema de gerenciamento de biblioteca!")
+
+with st.sidebar:
+    st.header("Navegação")
+    pagina = st.selectbox("Ir para", ["Início", "Clientes", "Livros", "Editoras"])
+
+pagina = pagina.lower()
+
+# Conteúdo das páginas
+if pagina == "início":
+    st.subheader("Página Inicial")
+    st.write("Aqui você pode gerenciar clientes, livros e editoras.")
+
+    sel = st.selectbox("Selecione a tabela para visualizar:", ["Clientes", "Livros", "Editoras"])
+    if sel == "Clientes":
+        df_clientes = carregar_tabela_para_dataframe(cursor, "clientes")
+        if not df_clientes.empty:
+            st.dataframe(df_clientes)
 
 
+    elif sel == "Livros":
+        df_livros = carregar_tabela_para_dataframe(cursor, "livros")
+        if not df_livros.empty:
+            st.dataframe(df_livros)
+    elif sel == "Editoras":
+        df_editoras = carregar_tabela_para_dataframe(cursor, "editora")
+        if not df_editoras.empty:
+            st.dataframe(df_editoras)
 
-# # db.criar_tabela_cliente(cursor)
-# # db.criar_tabela_livro(cursor)
-# # db.criar_tabela_editora(cursor)
-# # db.criar_tabela_Endereco(cursor)
+elif pagina == "clientes":
+    st.subheader("Gerenciamento de Clientes")
 
-# # db.inserir_cliente(cursor,conexao,"999.888.777-12","Rian","list_livros_comprados","99 91234-9856")
+    sec1, sec2, sec3 = st.tabs(["Adicionar Cliente", "Atualizar Cliente", "Deletar Cliente"])
 
-# # db.atualizar_dados(cursor,conexao,"clientes","nome","e",1)
+    with sec1:
+        st.write("Adicionar um novo cliente:")
+        cpf = st.text_input("CPF:")
+        nome = st.text_input("Nome:")
+        lista_livros = st.text_input("Lista de Livros Comprados (separados por vírgula):")
+        telefone = st.text_input("Telefone:")
+        if st.button("Adicionar Cliente"):
+            db.inserir_cliente(cursor, conexao, cpf, nome, lista_livros, telefone)
+            st.success("Cliente adicionado com sucesso!")
+    with sec2:
+        st.write("Atualizar um cliente existente:")
+        id_atualizar = st.number_input("ID do Cliente a ser atualizado:", min_value=1, step=1)
+        atributo = st.selectbox("Atributo a ser atualizado:", ["CPF", "nome", "list_livros_comprados", "telefone"])
+        valor = st.text_input("Novo valor:")
+        if st.button("Atualizar Cliente"):
+            db.atualizar_dados(cursor, conexao, "clientes", atributo, valor, id_atualizar)
+            st.success("Cliente atualizado com sucesso!")
+    with sec3:
+        st.write("Deletar um cliente:")
+        id_deletar = st.number_input("ID do Cliente a ser deletado:", min_value=1, step=1)
+        if st.button("Deletar Cliente"):
+            db.apagar_dado(cursor, conexao, "clientes", id_deletar)
+            st.success("Cliente deletado com sucesso!")
 
-# # db.apagar_dado(cursor, conexao, "clientes",1)
+    tabela_dados("clientes")
 
-# st.title("Sistema de Gerenciamento de Biblioteca")
-# st.write("Bem-vindo ao sistema de gerenciamento de biblioteca!")
-
-# #fazer o load das tabelas
-# def carregar_livros():
-#     try:
-#         data = db.listar_dados(cursor,"livros")
-#         if not data:
-#             st.info("Nenhum dado encontrado no banco de dados.", icon="ℹ️")
-#             return []
-
-#         livros = [
-#             {
-#                 "id": livro[0],
-#                 "titulo": livro[2],
-#                 "autor": livro[1],
-#                 "editora": livro[3],
-#                 "qnt_estoque": livro[4]
-#             }
-#                 for livro in data
-#         ]
-#         return livros
-#     except Exception as e:
-#         st.error(f"Erro ao carregar livros: {e}")
-#         return []
-    
-# def carregar_clientes():
-#     try:
-#         data = db.listar_dados(cursor,"clientes")
-#         if not data:
-#             st.info("Nenhum dado encontrado no banco de dados.", icon="ℹ️")
-#             return []
-
-#         clientes = [
-#             {
-#                 "id": cliente[0],
-#                 "nome": cliente[1],
-#                 "cpf": cliente[2],
-#                 "telefone": cliente[4],
-#                 "list_livros_comprados": cliente[3]
-#             }
-#                 for cliente in data
-#         ]
-#         return clientes
-#     except Exception as e:
-#         st.error(f"Erro ao carregar clientes: {e}")
-#         return []
-
-# with st.sidebar:
-#     st.header("Navegação")
-#     pagina = st.selectbox("Ir para", ["Início", "Clientes", "Livros"])
-
-# pagina = pagina.lower()
-
-# if pagina == "início":
-#     st.subheader("Página Inicial")
-#     st.write("Aqui você pode gerenciar clientes, livros e editoras.")
-
-#     escolha = st.selectbox("Selecione uma opção:", ["clientes", "livros", "editoras"])
-#     if escolha == "clientes":
-#         clientes_data = carregar_dados("clientes")
-#         if clientes_data:
-#             st.table(pd.DataFrame(clientes_data))
-
-# elif pagina == "clientes":
-#     st.subheader("Gerenciamento de Clientes")
-#     st.write("Funcionalidades para gerenciar clientes serão implementadas aqui.")
     
 
-# elif pagina == "livros":
-#     st.subheader("Gerenciamento de Livros")
-#     st.write("Funcionalidades para gerenciar livros serão implementadas aqui.")
+elif pagina == "livros":
+    st.subheader("Gerenciamento de Livros")
+
+    sec1, sec2, sec3 = st.tabs(["Adicionar Livro", "Atualizar Livro", "Deletar Livro"])
+
+    with sec1:
+        st.write("Adicionar um novo Livro:")
+        titulo = st.text_input("Título:")
+        editora = st.text_input("Editora:")
+        autor = st.text_input("Autor:")
+        qnt_estoque = st.number_input("Quantidade em Estoque:", min_value=0, step=1)
+        if st.button("Adicionar Livro"):
+            db.inserir_livro(cursor, conexao, titulo, editora, autor, qnt_estoque)
+            st.success("Livro adicionado com sucesso!")
+    with sec2:
+        st.write("Atualizar um livro existente:")
+        id_atualizar = st.number_input("ID do Livro a ser atualizado:", min_value=1, step=1)
+        atributo = st.selectbox("Atributo a ser atualizado:", ["titulo", "editora", "autor", "qnt_estoque"])
+        valor = st.text_input("Novo valor:")
+        if st.button("Atualizar Livro"):
+            db.atualizar_dados(cursor, conexao, "livros", atributo, valor, id_atualizar)
+            st.success("Livro atualizado com sucesso!")
+    with sec3:
+        st.write("Deletar um livro:")
+        id_deletar = st.number_input("ID do Livro a ser deletado:", min_value=1, step=1)
+        if st.button("Deletar Livro"):
+            db.apagar_dado(cursor, conexao, "livros", id_deletar)
+            st.success("Livro deletado com sucesso!")
+
+    tabela_dados("livros")
 
 
-# elif pagina == "editoras":
-#     st.subheader("Gerenciamento de Editoras")
-#     st.write("Funcionalidades para gerenciar editoras serão implementadas aqui.")
+elif pagina == "editoras":
+    st.subheader("Gerenciamento de Editoras")
 
-# st.subheader("📖 Lista de livros")
-# if st.button("🔄 Recarregar livros"):
-#     livros_data = carregar_clientes()
-#     if livros_data:
-#         st.table(livros_data)
-# else:
-#     livros_data = carregar_clientes()
-#     if livros_data:
-#         st.table(livros_data)
-# # db.fecharbanco(cursor,conexao)            
+    sec1, sec2, sec3 = st.tabs(["Adicionar Editora", "Atualizar Editora", "Deletar Editora"])
+    with sec1:
+        st.write("Adicionar uma nova Editora:")
+        gerente = st.text_input("Gerente:")
+        contato = st.text_input("Contato:")
+        telefone = st.text_input("Telefone:")
+        if st.button("Adicionar Editora"):
+            db.inserir_editora(cursor, conexao, gerente, contato, telefone)
+            st.success("Editora adicionada com sucesso!")
+    with sec2:
+        st.write("Atualizar uma editora existente:")
+        id_atualizar = st.number_input("ID da Editora a ser atualizada:", min_value=1, step=1)
+        atributo = st.selectbox("Atributo a ser atualizado:", ["gerente", "contato", "telefone"])
+        valor = st.text_input("Novo valor:")
+        if st.button("Atualizar Editora"):
+            db.atualizar_dados(cursor, conexao, "editora", atributo, valor, id_atualizar)
+            st.success("Editora atualizada com sucesso!")
+    with sec3:
+        st.write("Deletar uma editora:")
+        id_deletar = st.number_input("ID da Editora a ser deletada:", min_value=1, step=1)
+        if st.button("Deletar Editora"):
+            db.apagar_dado(cursor, conexao, "editora", id_deletar)
+            st.success("Editora deletada com sucesso!")
+
+    tabela_dados("editora")
