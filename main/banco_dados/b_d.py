@@ -1,28 +1,24 @@
 import sqlite3
 
-# 1 - Criando o BD
 def iniciarbanco():
     conexao = sqlite3.connect('biblioteca.db')
 
-    # 3 - Criando o cursor
     cursor = conexao.cursor()
     return cursor , conexao
 
 def criar_tabela_livro(cursor):
-    # 4 - Criando a tabela livros
     cursor.execute(
         """
             CREATE TABLE IF NOT EXISTS livros(
                 id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                 autor TEXT NOT NULL,
-                assunto TEXT NOT NULL,
+                titulo TEXT NOT NULL,
                 editora TEXT NOT NULL,
                 qnt_estoque INTEGER NOT NULL
             );
         """
     )
 def criar_tabela_cliente(cursor):
-    # 4 - Criando a tabela clientes
     cursor.execute(
         """
             CREATE TABLE IF NOT EXISTS clientes(
@@ -35,7 +31,6 @@ def criar_tabela_cliente(cursor):
         """
     )
 def criar_tabela_editora(cursor):
-    # 4 - Criando a tabela editora
     cursor.execute(
         """
             CREATE TABLE IF NOT EXISTS editora(
@@ -47,7 +42,6 @@ def criar_tabela_editora(cursor):
         """
     )
 def criar_tabela_Endereco(cursor):
-    # 4 - Criando a tabela endereços
     cursor.execute(
         """
             CREATE TABLE IF NOT EXISTS enderecos(
@@ -60,20 +54,18 @@ def criar_tabela_Endereco(cursor):
         """
     )
 def fechar_conexao(conexao):
-    # 5 - Fechando a conexão
     conexao.close
     print("A tabela foi criada")
 
 
-def inserir_livro(cursor,conexao,assunto,editora,qnt_estoque):
-    #7 - Inserindo dados
+def inserir_livro(cursor,conexao,titulo,editora,qnt_estoque):
     cursor.execute(
         """
-            INSERT INTO  livros(assunto, editora, qnt_estoque)
+            INSERT INTO  livros(titulo, editora, qnt_estoque)
             VALUES (?, ?, ?)
         
         """,
-        (assunto, editora, qnt_estoque)
+        (titulo, editora, qnt_estoque)
 
     )
     conexao.commit()
@@ -129,15 +121,6 @@ def atualizar_dados(cursor, conexao, tabela, atributo, valor, id):
         conexao.rollback()
         print(f"Erro ao atualizar dados: {e}")
 
-# def atualizar_dados(cursor,conexao,tabela,atributo,valor,id):
-#     cursor.execute(
-#         f"""
-#             UPDATE {tabela} SET {atributo} = {valor}
-#             WHERE id = {id}
-#         """
-#     )
-#     conexao.commit()
-
 def apagar_dado(cursor, conexao, tabela, id):
     try:
         if not tabela.isidentifier():
@@ -149,13 +132,3 @@ def apagar_dado(cursor, conexao, tabela, id):
     except Exception as e:
         conexao.rollback()
         print(f"Erro ao apagar dado: {e}")
-
-# def apagar_dado(cursor,conexao,tabela,id):
-#     cursor.execute(
-#         """
-#             DELETE FROM ?
-#             WHERE id in (?)
-#         """,
-#         (tabela, id)
-#     )
-#     conexao.commit()
