@@ -58,7 +58,6 @@ Este projeto é um sistema simples e intuitivo para gerenciamento de biblioteca,
 ### 3. Execute o sistema
 
 ### 4. Acesse no navegador
-http://localhost:8501
 
 ---
 
@@ -67,3 +66,4 @@ http://localhost:8501
 - O arquivo b_d.py contém todas as funções de banco de dados.  
 - O app.py monta a interface Streamlit, exibindo formulários, tabelas e abas de navegação.  
 - O usuário pode gerenciar clientes, livros e editoras de forma rápida e visual.
+
