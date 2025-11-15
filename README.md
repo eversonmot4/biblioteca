@@ -46,9 +46,3 @@ Este projeto é um sistema simples e intuitivo para gerenciamento de biblioteca,
 ├── app.py              # Interface Streamlit  
 │  
 └── README.md  
-
----
-
-## 🚀 Como Rodar o Projeto
-
-### 1. Clone o repositório
